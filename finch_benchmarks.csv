@@ -1,0 +1,5 @@
+pitcher,speed_mph,flight_time_ms,kinetic_energy_j,energy_vs_avg,gravity_drop_ft
+Average MLB fastball,93.8,392.5,127.5,1.0,2.48
+Hard thrower,100.0,368.2,144.9,1.14,2.18
+Aroldis Chapman (record pitch),105.8,348.0,162.2,1.27,1.95
+Sidd Finch (fictional),168.0,219.2,408.9,3.21,0.77

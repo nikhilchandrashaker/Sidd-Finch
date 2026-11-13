@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Sidd Finch Lab</title>
+<style>
+:root{--blue:#002D72;--orange:#FF5910;--bg:#f4f6fa;--ink:#101c33;--mute:#56627a;--card:#fff;--line:#d6dbe6;--seg:#002D72;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1530;--ink:#e9eefb;--mute:#9fb0d3;--card:#11214a;--line:#26396b;--seg:#6f9bff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a1530;--ink:#e9eefb;--mute:#9fb0d3;--card:#11214a;--line:#26396b;--seg:#6f9bff;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:var(--blue);color:#fff;border-bottom:6px solid var(--orange)}
+.wrap{max-width:900px;margin:0 auto;padding:0 18px}
+header .wrap{padding-top:30px;padding-bottom:26px}
+h1,h2{font-family:"Iowan Old Style",Georgia,"Times New Roman",serif;line-height:1.1;margin:0}
+h1{font-size:clamp(36px,7vw,60px)}
+h2{font-size:26px;margin-bottom:4px}
+p{margin:.5em 0;max-width:70ch}
+header p{color:#d5e0f7}
+.sub,.note{color:var(--mute)}
+.note{font-size:13px}
+.led{display:flex;align-items:baseline;gap:10px;margin-top:18px;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--orange)}
+.led b{font-size:clamp(56px,15vw,104px);line-height:1;text-shadow:0 0 16px rgba(255,89,16,.5)}
+.led span{color:#fff;font-size:18px}
+main{padding-bottom:60px}
+section{margin-top:42px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;margin-top:10px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;gap:10px;align-items:center;margin:8px 0}
+.ctl output{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--orange)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-top:14px}
+.stat{border-left:4px solid var(--orange);padding:2px 0 2px 10px}
+.stat strong{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.stat small{color:var(--mute)}
+.bar{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center;margin:7px 0;font-size:14px}
+.track{background:var(--line);height:16px;border-radius:3px;overflow:hidden}
+.fill{height:100%;background:var(--seg);transition:width .25s}
+.fill.me{background:var(--orange)}
+.bar span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.stack{display:flex;height:34px;border-radius:4px;overflow:hidden;margin:12px 0 6px;border:1px solid var(--line)}
+.stack div{display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;overflow:hidden;white-space:nowrap;transition:flex-grow .25s}
+.stack div:nth-child(1){background:#002D72}.stack div:nth-child(2){background:#1d4a9c}.stack div:nth-child(3){background:#3d6bc4}.stack div:nth-child(4){background:#e0501a}.stack div:nth-child(5){background:#FF5910}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{font:inherit;font-weight:600;background:var(--blue);color:#fff;border:2px solid var(--blue);border-radius:6px;padding:9px 15px;cursor:pointer}
+button.alt{background:transparent;color:var(--ink);border-color:var(--orange)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button:not(.alt){background:var(--orange);border-color:var(--orange)}}
+:root[data-theme="dark"] button:not(.alt){background:var(--orange);border-color:var(--orange)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.warn{color:var(--orange);font-weight:600}
+@media(max-width:600px){.ctl{grid-template-columns:1fr 64px}.ctl label{grid-column:1/-1}.bar{grid-template-columns:104px 1fr 56px}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>The Sidd Finch Lab</h1>
+<p>An analytics and biomechanics project on baseball’s most famous nonexistent pitcher, the New York Mets prospect who threw 168 mph in George Plimpton’s 1985 Sports Illustrated April Fools’ story.</p>
+<div class="led" aria-live="polite"><b id="mph">168</b><span>mph at release</span></div>
+</div></header>
+<main class="wrap">
+
+<section>
+<h2>Scouting report</h2>
+<div class="card">
+<p>In the story, Finch is a Mets camp arrival who learned his craft in Tibet, studied at Harvard, plays the French horn, and pitches wearing a single boot. His fastball is clocked at 168 mph with pinpoint control, and he is undecided about whether to play at all. None of it is real, so every number here is a modeled estimate built to ask one question: what would 168 mph demand of a human body?</p>
+</div>
+</section>
+
+<section>
+<h2>1. Pitch lab</h2>
+<p class="sub">Set the pitch, then see how much time a hitter has.</p>
+<div class="card">
+<div class="ctl"><label for="v">Release velocity</label><input id="v" type="range" min="70" max="180" value="168"><output id="vo"></output></div>
+<div class="ctl"><label for="e">Extension (ft)</label><input id="e" type="range" min="5" max="8" step="0.1" value="6.5"><output id="eo"></output></div>
+<div class="ctl"><label for="r">Hitter reaction (ms)</label><input id="r" type="range" min="120" max="220" value="170"><output id="ro"></output></div>
+<div class="stats">
+<div class="stat"><strong id="t"></strong><small>flight time to the plate</small></div>
+<div class="stat"><strong id="drop"></strong><small>gravity drop with no spin</small></div>
+<div class="stat"><strong id="left"></strong><small>time left to decide and swing</small></div>
+<div class="stat"><strong id="whiff"></strong><small>modeled swing-and-miss rate</small></div>
+</div>
+<p class="note" id="msg"></p>
+</div>
+<div class="card"><b>Flight time (ms), shorter is faster</b><div id="bars"></div></div>
+</section>
+
+<section>
+<h2>2. Biomechanics: how a body makes 168 mph</h2>
+<p class="sub">A fastball is built by the kinetic chain: legs and hips start the motion, the trunk rotates, and each segment hands speed to the next until the hand releases the ball. Each slider scales one link’s contribution. The 94 mph baseline split is a simplified teaching model, not measured data.</p>
+<div class="card">
+<div class="ctl"><label for="k0">Legs and hip drive</label><input id="k0" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k0o"></output></div>
+<div class="ctl"><label for="k1">Trunk rotation</label><input id="k1" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k1o"></output></div>
+<div class="ctl"><label for="k2">Shoulder and upper arm</label><input id="k2" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k2o"></output></div>
+<div class="ctl"><label for="k3">Elbow extension</label><input id="k3" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k3o"></output></div>
+<div class="ctl"><label for="k4">Wrist and hand</label><input id="k4" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k4o"></output></div>
+<div class="btns"><button class="alt" id="pAvg">Average MLB pitcher</button><button id="pFinch">Finch profile</button></div>
+<div class="stack" id="stack" aria-hidden="true"></div>
+<p class="note" id="legend"></p>
+<div class="stats">
+<div class="stat"><strong id="kv"></strong><small>modeled release speed</small></div>
+<div class="stat"><strong id="ke"></strong><small>ball kinetic energy</small></div>
+<div class="stat"><strong id="tq"></strong><small>elbow torque, estimated</small></div>
+<div class="stat"><strong id="lig"></strong><small>vs. ligament failure load</small></div>
+</div>
+<p id="bio"></p>
+</div>
+<div class="two">
+<div class="card"><b>Why it is hard</b>
+<p>Kinetic energy rises with the square of speed, so 168 mph carries about 3.2 times the energy of a 94 mph pitch. Every link must add speed, and the final links are small, light muscles and tendons.</p></div>
+<div class="card"><b>The ligament problem</b>
+<p>Published lab studies put elite pitchers’ elbow torque in the range of 60 to 70 N·m, above the roughly 30 to 35 N·m the ulnar collateral ligament can take alone, with muscle carrying the rest. This page scales torque with speed squared, a crude assumption, so a true 168 mph arm would need a very different structure.</p></div>
+</div>
+</section>
+
+<section>
+<h2>3. Benchmarks</h2>
+<div class="card scroll"><table id="bench"><thead><tr><th>Pitcher</th><th>Speed (mph)</th><th>Flight (ms)</th><th>Energy (J)</th><th>vs. average</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+<h2>4. One start against a lineup</h2>
+<p class="sub">Simulates 27 outs using the pitch lab’s velocity and hitter settings. Control sets how often a pitch is a strike.</p>
+<div class="card">
+<div class="ctl"><label for="c">Control (strike %)</label><input id="c" type="range" min="30" max="80" value="55"><output id="co"></output></div>
+<div class="btns"><button id="sim">Pitch a game</button><button class="alt" id="clr">Clear results</button></div>
+<div class="scroll" style="margin-top:14px"><table id="tbl"><thead><tr><th>Start</th><th>K</th><th>BB</th><th>Balls in play</th><th>Pitches</th></tr></thead><tbody></tbody></table></div>
+<p class="note" id="avg">No starts yet.</p>
+</div>
+</section>
+
+<section>
+<h2>Method and limits</h2>
+<p>Flight time is distance from release (60.5 ft minus extension) divided by speed, ignoring drag, which would slow a real pitch by roughly 8 to 10 percent. Swing-and-miss rate is a logistic curve on the gap between hitter reaction time and the time left after a 150 ms swing, tuned to a 22 percent miss rate on a 94 mph fastball. The kinetic chain split, the torque scaling, and the game simulator are teaching models. Nothing here is a prediction, because Sidd Finch is fiction.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const FT=60.5,MPH=1.46667,M=0.145;
+const ft=(v,e)=>(FT-e)/(v*MPH)*1000;
+const ke=v=>0.5*M*Math.pow(v*0.44704,2);
+function whiffRate(v,e,r){
+  const gap=r-(ft(v,e)-150), refGap=170-(ft(94,6.5)-150);
+  const k=Math.log(.22/.78)-refGap/18;
+  return 1/(1+Math.exp(-(gap/18+k)));
+}
+const refs=[["Average MLB fastball",93.8],["Hard thrower",100],["Chapman (record)",105.8],["Sidd Finch",null]];
+function update(){
+  const v=+$("v").value,e=+$("e").value,r=+$("r").value;
+  $("mph").textContent=v;$("vo").textContent=v+" mph";$("eo").textContent=e.toFixed(1);$("ro").textContent=r+" ms";
+  const t=ft(v,e),s=t/1000;
+  $("t").textContent=Math.round(t)+" ms";
+  $("drop").textContent=(0.5*32.174*s*s).toFixed(2)+" ft";
+  $("left").textContent=Math.round(Math.max(0,t-150))+" ms";
+  $("whiff").textContent=Math.round(whiffRate(v,e,r)*100)+"%";
+  $("msg").textContent=t<r+150?"The ball arrives before a hitter can both see it and start a swing, so he is guessing.":"The hitter has enough time to see the pitch and react.";
+  const max=ft(70,e);
+  $("bars").innerHTML=refs.map(([n,sp],i)=>{const sv=sp??v,ms=ft(sv,e);
+    return `<div class="bar"><span>${n}</span><div class="track"><div class="fill ${i==3?'me':''}" style="width:${ms/max*100}%"></div></div><span>${Math.round(ms)} ms</span></div>`}).join("");
+}
+const base=[12,20,24,22,16],names=["Legs","Trunk","Shoulder","Elbow","Wrist"];
+function chain(){
+  const k=[0,1,2,3,4].map(i=>+$("k"+i).value);
+  k.forEach((x,i)=>$("k"+i+"o").textContent=x.toFixed(2)+"×");
+  const parts=base.map((b,i)=>b*k[i]),v=parts.reduce((a,b)=>a+b,0);
+  $("stack").innerHTML=parts.map((p,i)=>`<div style="flex-grow:${p}">${p/v>.12?names[i]:""}</div>`).join("");
+  $("legend").textContent=names.map((n,i)=>`${n} ${parts[i].toFixed(0)} mph`).join(", ");
+  $("kv").textContent=v.toFixed(0)+" mph";
+  $("ke").textContent=Math.round(ke(v))+" J";
+  const tq=64*Math.pow(v/94,2);
+  $("tq").textContent=Math.round(tq)+" N·m";
+  const ratio=tq/33;
+  $("lig").textContent=ratio.toFixed(1)+"×";
+  $("bio").innerHTML=v>=165?`<span class="warn">At this speed the modeled elbow torque is about ${ratio.toFixed(1)} times what the ligament alone can hold.</span> Finch would need far stronger tissue, near-perfect timing that cuts load, or something else the story never explains.`:`Uniform scaling needed to reach 168 mph from the 94 mph baseline is about ${(168/94).toFixed(2)}×. Raise the sliders to see how the speed, energy, and arm load climb.`;
+}
+function setK(a){a.forEach((x,i)=>$("k"+i).value=x);chain()}
+$("pAvg").onclick=()=>setK([1,1,1,1,1]);
+$("pFinch").onclick=()=>setK([1.6,1.8,1.9,1.8,1.7]);
+["v","e","r"].forEach(i=>$(i).addEventListener("input",()=>{update();}));
+[0,1,2,3,4].forEach(i=>$("k"+i).addEventListener("input",chain));
+$("c").addEventListener("input",()=>$("co").textContent=$("c").value+"%");
+$("co").textContent=$("c").value+"%";
+function bench(){
+  const e=ke(93.8);
+  $("bench").tBodies[0].innerHTML=[["Average MLB fastball",93.8],["Hard thrower",100],["Chapman (record)",105.8],["Sidd Finch",168]].map(([n,v])=>`<tr><td>${n}</td><td>${v}</td><td>${Math.round(ft(v,6.5))}</td><td>${Math.round(ke(v))}</td><td>${(ke(v)/e).toFixed(2)}×</td></tr>`).join("");
+}
+const res=[];
+function game(){
+  const v=+$("v").value,e=+$("e").value,r=+$("r").value,c=+$("c").value/100,w=whiffRate(v,e,r);
+  let K=0,BB=0,BIP=0,P=0,outs=0;
+  while(outs<27){
+    let b=0,s=0;
+    for(;;){P++;
+      if(Math.random()<c){
+        if(Math.random()<.65){ if(Math.random()<w)s++; else{BIP++;outs++;break} }
+        else s++;
+      }else b++;
+      if(s>=3){K++;outs++;break}
+      if(b>=4){BB++;break}
+    }
+  }
+  return [K,BB,BIP,P];
+}
+function render(){
+  $("tbl").tBodies[0].innerHTML=res.map((x,i)=>`<tr><td>${i==0?"Latest":"Start "+(res.length-i)}</td><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join("");
+  const a=i=>(res.reduce((s,x)=>s+x[i],0)/res.length).toFixed(1);
+  $("avg").textContent=res.length?`Average over ${res.length} start${res.length>1?"s":""}: ${a(0)} K, ${a(1)} BB, ${a(3)} pitches.`:"No starts yet.";
+}
+$("sim").onclick=()=>{res.unshift(game());if(res.length>10)res.pop();render()};
+$("clr").onclick=()=>{res.length=0;render()};
+update();chain();bench();
+</script>
+</body>
+</html>

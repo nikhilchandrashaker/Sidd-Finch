@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sidd Finch 3D Delivery Simulation</title>
+<style>
+:root{--blue:#002D72;--orange:#FF5910;--bg:#f4f6fa;--ink:#101c33;--mute:#56627a;--card:#fff;--line:#d6dbe6;--seg:#002D72;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1530;--ink:#e9eefb;--mute:#9fb0d3;--card:#11214a;--line:#26396b;--seg:#6f9bff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a1530;--ink:#e9eefb;--mute:#9fb0d3;--card:#11214a;--line:#26396b;--seg:#6f9bff;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:var(--blue);color:#fff;border-bottom:6px solid var(--orange)}
+.wrap{max-width:900px;margin:0 auto;padding:0 18px}
+header .wrap{padding-top:30px;padding-bottom:26px}
+h1,h2{font-family:"Iowan Old Style",Georgia,"Times New Roman",serif;line-height:1.1;margin:0}
+h1{font-size:clamp(36px,7vw,60px)}
+h2{font-size:26px;margin-bottom:4px}
+p{margin:.5em 0;max-width:70ch}
+header p{color:#d5e0f7}
+.sub,.note{color:var(--mute)}
+.note{font-size:13px}
+.led{display:flex;align-items:baseline;gap:10px;margin-top:18px;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--orange)}
+.led b{font-size:clamp(56px,15vw,104px);line-height:1;text-shadow:0 0 16px rgba(255,89,16,.5)}
+.led span{color:#fff;font-size:18px}
+main{padding-bottom:60px}
+section{margin-top:42px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;margin-top:10px}
+.ctl{display:grid;grid-template-columns:170px 1fr 74px;gap:10px;align-items:center;margin:8px 0}
+.ctl output{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--orange)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-top:14px}
+.stat{border-left:4px solid var(--orange);padding:2px 0 2px 10px}
+.stat strong{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.stat small{color:var(--mute)}
+.bar{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center;margin:7px 0;font-size:14px}
+.track{background:var(--line);height:16px;border-radius:3px;overflow:hidden}
+.fill{height:100%;background:var(--seg);transition:width .25s}
+.fill.me{background:var(--orange)}
+.bar span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.stack{display:flex;height:34px;border-radius:4px;overflow:hidden;margin:12px 0 6px;border:1px solid var(--line)}
+.stack div{display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;overflow:hidden;white-space:nowrap;transition:flex-grow .25s}
+.stack div:nth-child(1){background:#002D72}.stack div:nth-child(2){background:#1d4a9c}.stack div:nth-child(3){background:#3d6bc4}.stack div:nth-child(4){background:#e0501a}.stack div:nth-child(5){background:#FF5910}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{font:inherit;font-weight:600;background:var(--blue);color:#fff;border:2px solid var(--blue);border-radius:6px;padding:9px 15px;cursor:pointer}
+button.alt{background:transparent;color:var(--ink);border-color:var(--orange)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button:not(.alt){background:var(--orange);border-color:var(--orange)}}
+:root[data-theme="dark"] button:not(.alt){background:var(--orange);border-color:var(--orange)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.warn{color:var(--orange);font-weight:600}
+@media(max-width:600px){.ctl{grid-template-columns:1fr 64px}.ctl label{grid-column:1/-1}.bar{grid-template-columns:104px 1fr 56px}.two{grid-template-columns:1fr}}
+select{font:inherit;padding:7px 9px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.btns label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--mute)}
+canvas{display:block;max-width:100%}
+.view{position:relative;height:420px;border:1px solid var(--line);border-radius:8px;overflow:hidden;touch-action:pan-y;cursor:grab;background:var(--bg)}
+.view canvas{position:absolute;inset:0}
+.hud{position:absolute;left:12px;top:10px;pointer-events:none;z-index:2;color:var(--ink)}
+.hud b{font-size:22px}.hud small{color:var(--mute)}
+.two>*{min-width:0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Sidd Finch 3D Delivery Simulation</h1>
+<p>A 3D biomechanics model of the pitching motion for the fictional Mets pitcher from Plimpton’s 1985 Sports Illustrated story. Change how hard each link in the chain fires and watch the throw change.</p>
+</div></header>
+<main class="wrap">
+<section>
+<h2>Delivery</h2>
+<p class="sub">A 3D model of the throwing motion (drag to orbit, scroll to zoom) driven by the five sliders below. Each link fires in order, hip first and wrist last, and hand speed at every instant is the sum of all five contributions. Press play, then move the sliders to reshape the delivery.</p>
+<div class="card">
+<div class="ctl"><label for="k0">Legs and hip drive</label><input id="k0" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k0o"></output></div>
+<div class="ctl"><label for="k1">Trunk rotation</label><input id="k1" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k1o"></output></div>
+<div class="ctl"><label for="k2">Shoulder and upper arm</label><input id="k2" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k2o"></output></div>
+<div class="ctl"><label for="k3">Elbow extension</label><input id="k3" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k3o"></output></div>
+<div class="ctl"><label for="k4">Wrist and hand</label><input id="k4" type="range" min="0.5" max="2.5" step="0.05" value="1"><output id="k4o"></output></div>
+<div class="btns"><button class="alt" id="pAvg">Average MLB pitcher</button><button id="pFinch">Finch profile</button></div>
+<div class="two" style="margin-top:14px">
+<div class="view" id="view" role="img" aria-label="3D model of a pitcher delivering a pitch, drag to rotate"><div class="hud"><b id="hud1"></b><br><small id="hud2"></small></div></div>
+<canvas id="gr" width="440" height="420" role="img" aria-label="Segment rates and hand speed over time"></canvas>
+</div>
+<div class="btns"><button class="alt" id="vS">Side view</button><button class="alt" id="vC">Catcher view</button><button class="alt" id="vT">Overhead</button></div>
+<div class="btns"><button id="play">Play delivery</button><label>Playback <select id="spd"><option value="0.2">1/5 speed</option><option value="0.1" selected>1/10 speed</option><option value="0.05">1/20 speed</option></select></label></div>
+<div class="stats">
+<div class="stat"><strong id="sp1"></strong><small>peak hand speed at release</small></div>
+<div class="stat"><strong id="sp2"></strong><small>release, ms into the motion</small></div>
+</div>
+<p><b>Contribution to peak hand speed</b></p>
+<div id="cbar"></div>
+<p class="note">The default sliders are calibrated to give 94 mph. This is a prescribed-motion model: it moves the joints on a schedule and adds up their speeds, but it does not compute forces, so it says nothing about arm load or injury risk. Joint speeds are shown as a share of each curve’s own peak, and the orange line is hand speed in mph. In 3D the arm swings in one plane while the pelvis and shoulders turn from side-on to square. That turn is drawn for realism and does not change the numbers.</p>
+</div>
+</section>
+
+
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const LN=[.55,.30,.27,.20],REL0=[100,50,40,10].map(d=>d*Math.PI/180),D=[.15,-.61,-1.31,-1.05,-.52],CEN=[.06,.085,.11,.13,.145],S0=.03,TMAX=.26,DT=.001;
+const NAMES=["Legs and hip","Trunk","Shoulder","Elbow","Wrist"],CC=["#7fa8ee","#5c8fe4","#3f78d6","#2d62bd","#8d9bbd"];
+let SIM=null,CAL=0,raf=0;
+function delivery(k){
+  let x=0;const rel=[...REL0],fr=[];
+  for(let n=0;n<=Math.round(TMAX/DT);n++){
+    const t=n*DT;
+    const r=D.map((d,i)=>d/(S0*Math.sqrt(Math.PI))*k[i]*Math.exp(-Math.pow((t*k[i]-CEN[i])/S0,2)));
+    const a1=rel[0],a2=a1+rel[1],a3=a2+rel[2],a4=a3+rel[3];
+    const H=[x,0],Sh=[H[0]+LN[0]*Math.cos(a1),LN[0]*Math.sin(a1)];
+    const E=[Sh[0]+LN[1]*Math.cos(a2),Sh[1]+LN[1]*Math.sin(a2)];
+    const W=[E[0]+LN[2]*Math.cos(a3),E[1]+LN[2]*Math.sin(a3)];
+    const P=[W[0]+LN[3]*Math.cos(a4),W[1]+LN[3]*Math.sin(a4)];
+    const J=[H,Sh,E,W],cv=[[r[0],0]];
+    for(let j=0;j<4;j++)cv.push([-r[j+1]*(P[1]-J[j][1]),r[j+1]*(P[0]-J[j][0])]);
+    const V=[0,1].map(c=>cv.reduce((s,v)=>s+v[c],0));
+    fr.push({t,pts:[H,Sh,E,W,P],r,cv,V,sp:Math.hypot(V[0],V[1])});
+    x+=r[0]*DT;for(let j=0;j<4;j++)rel[j]+=r[j+1]*DT;
+  }
+  let pk=0;fr.forEach((f,i)=>{if(f.sp>fr[pk].sp)pk=i});
+  return {fr,pk};
+}
+function colors(){const s=getComputedStyle(document.documentElement),g=n=>s.getPropertyValue(n).trim();return{ink:g("--ink"),mute:g("--mute"),line:g("--line"),or:g("--orange"),blue:g("--seg")}}
+const mphOf=v=>v*CAL/0.44704;
+const V3=(x,y,z)=>new THREE.Vector3(x,y,z),UP=V3(0,1,0);
+let R=null,SC,CAM,M={},az=.65,elv=.18,dist=6.6;const TG=V3(.1,.45,.05);
+function setSeg(m,a,b){const d=b.clone().sub(a),L=d.length()||1e-6;m.position.copy(a).addScaledVector(d,.5);m.scale.set(1,L,1);m.quaternion.setFromUnitVectors(UP,d.divideScalar(L))}
+function render(){if(!R)return;CAM.position.set(TG.x+dist*Math.cos(elv)*Math.sin(az),TG.y+dist*Math.sin(elv),TG.z+dist*Math.cos(elv)*Math.cos(az));CAM.lookAt(TG);R.render(SC,CAM)}
+function setView(a,e){az=a;elv=e;render()}
+function init3D(){
+  const host=$("view"),fail=()=>host.insertAdjacentHTML("beforeend",'<p class="note" style="padding:14px;position:relative">The 3D view could not load. The graph and numbers still work.</p>');
+  if(!window.THREE)return fail();
+  try{R=new THREE.WebGLRenderer({antialias:true,alpha:true})}catch(e){R=null;return fail()}
+  R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));host.prepend(R.domElement);
+  SC=new THREE.Scene();CAM=new THREE.PerspectiveCamera(35,1,.1,100);
+  SC.add(new THREE.AmbientLight(0xffffff,.75));const dl=new THREE.DirectionalLight(0xffffff,.85);dl.position.set(3,6,4);SC.add(dl);
+  const mat=c=>new THREE.MeshLambertMaterial({color:c});
+  const seg=(r,c)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,1,14),mat(c));SC.add(m);return m};
+  const sph=(r,c)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),mat(c));SC.add(m);return m};
+  const BL=0x2a5db8,OR=0xFF5910;
+  M.ground=new THREE.Mesh(new THREE.CylinderGeometry(3,3,.1,48),mat(0xcccccc));M.ground.position.set(-.2,-1,0);SC.add(M.ground);
+  const rub=new THREE.Mesh(new THREE.BoxGeometry(.15,.04,.6),mat(0xffffff));rub.position.set(-.4,-.93,0);SC.add(rub);
+  Object.assign(M,{thR:seg(.07,BL),shR:seg(.055,BL),thL:seg(.07,BL),shL:seg(.055,BL),pel:seg(.09,BL),trk:seg(.13,BL),shb:seg(.07,BL),
+    ua:seg(.052,OR),fa:seg(.045,OR),hd:seg(.03,OR),gu:seg(.045,BL),gf:seg(.04,BL),
+    head:sph(.11,0xe8c9a8),sR:sph(.06,OR),eR:sph(.05,OR),wR:sph(.04,OR),glove:sph(.07,0x5a3a22),ball:sph(.045,0xffffff)});
+  const tg=new THREE.BufferGeometry();tg.setAttribute("position",new THREE.BufferAttribute(new Float32Array(240),3));tg.setDrawRange(0,0);
+  M.trail=new THREE.Line(tg,new THREE.LineBasicMaterial({color:OR}));M.trail.frustumCulled=false;SC.add(M.trail);
+  const rs=()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;R.setSize(w,h);CAM.aspect=w/h;CAM.updateProjectionMatrix();render()};
+  new ResizeObserver(rs).observe(host);
+  let drag=null;
+  host.addEventListener("pointerdown",e=>{drag=[e.clientX,e.clientY];host.setPointerCapture(e.pointerId);host.style.cursor="grabbing"});
+  host.addEventListener("pointermove",e=>{if(!drag)return;az-=(e.clientX-drag[0])*.008;elv=Math.max(-.1,Math.min(1.5,elv+(e.clientY-drag[1])*.006));drag=[e.clientX,e.clientY];render()});
+  const end=()=>{drag=null;host.style.cursor="grab"};host.addEventListener("pointerup",end);host.addEventListener("pointercancel",end);
+  host.addEventListener("wheel",e=>{e.preventDefault();dist=Math.max(3.5,Math.min(11,dist*(1+e.deltaY*.001)));render()},{passive:false});
+}
+function pose(f){
+  const [Hp,Sh,E,Wr,P]=f.pts,ang=Math.atan2(Sh[1]-Hp[1],Sh[0]-Hp[0]),fr=Math.min(1,Math.max(0,(REL0[0]-ang)/.6109));
+  const ys=Math.PI/2*(1-fr),yp=Math.PI/2*(1-Math.min(1,fr*1.5)),us=V3(-Math.sin(ys),0,Math.cos(ys)),up=V3(-Math.sin(yp),0,Math.cos(yp));
+  const H3=V3(Hp[0],Hp[1],0),S3=V3(Sh[0],Sh[1],0),SR=S3.clone().addScaledVector(us,.19),SL=S3.clone().addScaledVector(us,-.19);
+  const HR=H3.clone().addScaledVector(up,.1),HL=H3.clone().addScaledVector(up,-.1),d=p=>V3(p[0]-Sh[0],p[1]-Sh[1],0);
+  return {fr,H3,S3,SR,SL,HR,HL,E3:SR.clone().add(d(E)),W3:SR.clone().add(d(Wr)),P3:SR.clone().add(d(P)),dir:V3(Sh[0]-Hp[0],Sh[1]-Hp[1],0).normalize()};
+}
+function drawFig(n){
+  const f=SIM.fr[n];
+  $("hud1").textContent=Math.round(mphOf(f.sp))+" mph";$("hud2").textContent=Math.round(f.t*1000)+" ms";
+  if(!R)return;
+  M.ground.material.color.set(colors().line);
+  const p=pose(f),fR=V3(-.55,-.95,.12),fL=V3(.45,-.95,-.12);
+  const kR=p.HR.clone().add(fR).multiplyScalar(.5).add(V3(.15,0,0)),kL=p.HL.clone().add(fL).multiplyScalar(.5).add(V3(.12,0,0));
+  setSeg(M.thR,p.HR,kR);setSeg(M.shR,kR,fR);setSeg(M.thL,p.HL,kL);setSeg(M.shL,kL,fL);
+  setSeg(M.pel,p.HL,p.HR);setSeg(M.trk,p.H3,p.S3);setSeg(M.shb,p.SL,p.SR);
+  setSeg(M.ua,p.SR,p.E3);setSeg(M.fa,p.E3,p.W3);setSeg(M.hd,p.W3,p.P3);
+  const G=p.SL.clone().add(V3(.45,.12,0).lerp(V3(.12,-.12,-.04),p.fr)),GE=p.SL.clone().add(G).multiplyScalar(.5).add(V3(0,-.08,-.1));
+  setSeg(M.gu,p.SL,GE);setSeg(M.gf,GE,G);M.glove.position.copy(G);
+  M.head.position.copy(p.S3).addScaledVector(p.dir,.2);
+  M.sR.position.copy(p.SR);M.eR.position.copy(p.E3);M.wR.position.copy(p.W3);M.ball.position.copy(p.P3);
+  const pa=M.trail.geometry.attributes.position;let c=0;
+  for(let i=0;i<n;i+=4){const q=pose(SIM.fr[i]).P3;pa.setXYZ(c++,q.x,q.y,q.z)}
+  pa.setXYZ(c++,p.P3.x,p.P3.y,p.P3.z);pa.needsUpdate=true;M.trail.geometry.setDrawRange(0,c);
+  render();
+}
+function drawGraph(n){
+  const c=$("gr"),g=c.getContext("2d"),W=c.width,H=c.height,col=colors(),pl=44,pr=12,pt=34,pb=34,w=W-pl-pr,h=H-pt-pb,N=SIM.fr.length;
+  g.clearRect(0,0,W,H);g.font="12px system-ui,sans-serif";g.lineJoin="round";
+  const X=i=>pl+i/(N-1)*w,top=Math.max(100,Math.ceil(mphOf(SIM.fr[SIM.pk].sp)/20)*20),Ys=s=>pt+h-mphOf(s)/top*h;
+  g.strokeStyle=col.line;g.fillStyle=col.mute;g.lineWidth=1;
+  for(let m=0;m<=top;m+=top/4){const y=pt+h-m/top*h;g.beginPath();g.moveTo(pl,y);g.lineTo(pl+w,y);g.stroke();g.fillText(Math.round(m),8,y+4)}
+  for(let ms=0;ms<=250;ms+=50)g.fillText(ms,pl+ms/(TMAX*1000)*w-8,H-pb+16);
+  g.fillText("ms into the motion",pl+w/2-50,H-6);
+  for(let j=0;j<5;j++){
+    const mx=Math.max(...SIM.fr.map(f=>Math.abs(f.r[j])));
+    g.strokeStyle=CC[j];g.lineWidth=2;g.beginPath();
+    SIM.fr.forEach((f,i)=>{const y=pt+h-Math.abs(f.r[j])/mx*h*.75;i?g.lineTo(X(i),y):g.moveTo(X(i),y)});g.stroke();
+    const pi=SIM.fr.findIndex(f=>Math.abs(f.r[j])===mx);g.fillStyle=CC[j];
+    g.fillText(NAMES[j].split(" ")[0],X(pi)-14,pt+h-h*.75-6-(j%2)*13);
+  }
+  g.strokeStyle=col.or;g.lineWidth=3.5;g.beginPath();
+  SIM.fr.forEach((f,i)=>{i?g.lineTo(X(i),Ys(f.sp)):g.moveTo(X(i),Ys(f.sp))});g.stroke();
+  g.strokeStyle=col.ink;g.lineWidth=1;g.setLineDash([4,4]);g.beginPath();g.moveTo(X(n),pt);g.lineTo(X(n),pt+h);g.stroke();g.setLineDash([]);
+  g.fillStyle=col.or;g.beginPath();g.arc(X(n),Ys(SIM.fr[n].sp),5,0,7);g.fill();
+  g.fillStyle=col.ink;g.fillText("Hand speed (mph, orange) and joint speeds",pl,18);
+}
+const draw=n=>{drawFig(n);drawGraph(n)};
+function simRun(){
+  cancelAnimationFrame(raf);
+  if(!CAL){const b=delivery([1,1,1,1,1]);CAL=94*0.44704/b.fr[b.pk].sp}
+  SIM=delivery([0,1,2,3,4].map(i=>+$("k"+i).value));
+  const f=SIM.fr[SIM.pk],u=[f.V[0]/f.sp,f.V[1]/f.sp];
+  $("sp1").textContent=Math.round(mphOf(f.sp))+" mph";$("sp2").textContent=Math.round(f.t*1000)+" ms";
+  $("cbar").innerHTML=f.cv.map((c,i)=>{const s=mphOf(c[0]*u[0]+c[1]*u[1]);
+    return `<div class="bar"><span>${NAMES[i]}</span><div class="track"><div class="fill" style="width:${Math.min(100,Math.abs(s)/mphOf(f.sp)*100)}%"></div></div><span>${s>=0?"+":""}${Math.round(s)} mph</span></div>`}).join("");
+  draw(SIM.pk);
+}
+$("play").onclick=()=>{
+  cancelAnimationFrame(raf);const sp=+$("spd").value;let t0=null;
+  const step=ts=>{if(t0===null)t0=ts;const n=Math.min(SIM.fr.length-1,Math.floor((ts-t0)/1000*sp/DT));draw(n);if(n<SIM.fr.length-1)raf=requestAnimationFrame(step)};
+  raf=requestAnimationFrame(step);
+};
+[0,1,2,3,4].forEach(i=>$("k"+i).addEventListener("input",simRun));
+
+function labels(){[0,1,2,3,4].forEach(i=>$("k"+i+"o").textContent=(+$("k"+i).value).toFixed(2)+"×")}
+[0,1,2,3,4].forEach(i=>$("k"+i).addEventListener("input",labels));
+function setK(a){a.forEach((x,i)=>$("k"+i).value=x);labels();simRun()}
+$("pAvg").onclick=()=>setK([1,1,1,1,1]);
+$("pFinch").onclick=()=>setK([1.6,1.75,1.8,1.7,1.65]);
+$("vS").onclick=()=>setView(0,.12);$("vC").onclick=()=>setView(Math.PI/2,.12);$("vT").onclick=()=>setView(0,1.45);
+init3D();labels();simRun();
+</script>
+</body>
+</html>
